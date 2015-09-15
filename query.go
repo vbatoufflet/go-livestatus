@@ -134,7 +134,7 @@ func (q *Query) parse(data []byte) ([]Record, error) {
 	// Unmarshal received data
 	if err := json.Unmarshal(data, &rows); err != nil {
 		return nil, err
-	} else if len(rows) < 2 {
+	} else if len(q.columns) == 0 && len(rows) < 2 || len(q.columns) > 0 && len(rows) < 1 {
 		return records, nil
 	}
 
