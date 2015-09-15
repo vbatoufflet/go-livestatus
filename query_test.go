@@ -9,6 +9,7 @@ func Test_Query(t *testing.T) {
 	expected := "GET table1\n"
 	expected += "ResponseHeader: fixed16\n"
 	expected += "OutputFormat: json\n"
+	expected += "\n"
 
 	q := newQuery("table1", &Livestatus{})
 
@@ -24,6 +25,7 @@ func Test_QueryColumnSingle(t *testing.T) {
 	expected += "Columns: column1\n"
 	expected += "ResponseHeader: fixed16\n"
 	expected += "OutputFormat: json\n"
+	expected += "\n"
 
 	q := newQuery("table1", &Livestatus{})
 	q.Columns("column1")
@@ -40,6 +42,7 @@ func Test_QueryColumnMulti(t *testing.T) {
 	expected += "Columns: column1 column2\n"
 	expected += "ResponseHeader: fixed16\n"
 	expected += "OutputFormat: json\n"
+	expected += "\n"
 
 	q := newQuery("table1", &Livestatus{})
 	q.Columns("column1", "column2")
@@ -56,6 +59,7 @@ func Test_QueryFilterSingle(t *testing.T) {
 	expected += "Filter: column1 ~ abc\n"
 	expected += "ResponseHeader: fixed16\n"
 	expected += "OutputFormat: json\n"
+	expected += "\n"
 
 	q := newQuery("table1", &Livestatus{})
 	q.Filter("column1 ~ abc")
@@ -73,6 +77,7 @@ func Test_QueryFilterMulti(t *testing.T) {
 	expected += "Filter: column2 >= 123\n"
 	expected += "ResponseHeader: fixed16\n"
 	expected += "OutputFormat: json\n"
+	expected += "\n"
 
 	q := newQuery("table1", &Livestatus{})
 	q.Filter("column1 ~ abc")
@@ -92,6 +97,7 @@ func Test_QueryAnd(t *testing.T) {
 	expected += "And: 2\n"
 	expected += "ResponseHeader: fixed16\n"
 	expected += "OutputFormat: json\n"
+	expected += "\n"
 
 	q := newQuery("table1", &Livestatus{})
 	q.Filter("column1 ~ abc")
@@ -112,6 +118,7 @@ func Test_QueryOr(t *testing.T) {
 	expected += "Or: 2\n"
 	expected += "ResponseHeader: fixed16\n"
 	expected += "OutputFormat: json\n"
+	expected += "\n"
 
 	q := newQuery("table1", &Livestatus{})
 	q.Filter("column1 ~ abc")
@@ -131,6 +138,7 @@ func Test_QueryNegate(t *testing.T) {
 	expected += "Negate:\n"
 	expected += "ResponseHeader: fixed16\n"
 	expected += "OutputFormat: json\n"
+	expected += "\n"
 
 	q := newQuery("table1", &Livestatus{})
 	q.Filter("column1 ~ abc")
