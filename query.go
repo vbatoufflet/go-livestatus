@@ -82,7 +82,7 @@ func (q *Query) Exec() (*Response, error) {
 	for {
 		data = make([]byte, 1024)
 
-		_, err = conn.Read(data)
+		n, err := conn.Read(data)
 		if err == io.EOF {
 			break
 		} else if err != nil {
@@ -90,6 +90,12 @@ func (q *Query) Exec() (*Response, error) {
 		}
 
 		buf.Write(bytes.TrimRight(data, "\x00"))
+
+		// New line signals the end of content. This check helps
+		// if the connection is not forcibly closed
+		if data[n-1] == byte('\n') {
+			break
+		}
 	}
 
 	if buf.Len() == 0 {
@@ -122,7 +128,11 @@ func (q *Query) buildCmd() string {
 }
 
 func (q *Query) dial() (net.Conn, error) {
-	return net.Dial(q.ls.network, q.ls.address)
+	if q.ls.dialer != nil {
+		return q.ls.dialer()
+	} else {
+		return net.Dial(q.ls.network, q.ls.address)
+	}
 }
 
 func (q *Query) parse(data []byte) ([]Record, error) {
