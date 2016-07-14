@@ -26,6 +26,12 @@ func (q *Query) Columns(names ...string) *Query {
 	return q
 }
 
+// KeepAlive keeps the connection open after the query, for re-use
+func (q *Query) KeepAlive() *Query {
+	q.headers = append(q.headers, "KeepAlive: on")
+	return q
+}
+
 // Filter sets a new filter to apply to the query.
 func (q *Query) Filter(rule string) *Query {
 	q.headers = append(q.headers, "Filter: "+rule)
@@ -108,12 +114,25 @@ func (q *Query) WaitTimeout(t time.Duration) *Query {
 func (q *Query) Exec() (*Response, error) {
 	resp := &Response{}
 
-	// Connect to socket
-	conn, err := q.dial()
-	if err != nil {
-		return nil, err
+	var err error
+	var conn net.Conn
+
+	if q.ls.keepConn != nil {
+		conn = q.ls.keepConn
+	} else {
+		// Connect to socket
+		conn, err = q.dial()
+		if err != nil {
+			return nil, err
+		}
 	}
-	defer conn.Close()
+
+	if !q.ls.keepalive {
+		q.ls.keepConn = nil
+		defer conn.Close()
+	} else {
+		q.ls.keepConn = conn
+	}
 
 	// Send command data
 	conn.Write([]byte(q.buildCmd()))
