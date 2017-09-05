@@ -1,7 +1,7 @@
 go-livestatus [![](https://api.travis-ci.org/vbatoufflet/go-livestatus.png)](https://travis-ci.org/vbatoufflet/go-livestatus)
 =============
 
-This package implements a MK Livestatus binding for Go.
+This package implements a [MK Livestatus][2] binding for Go.
 
 The source code is available at [Github][0], licensed under the terms of the [BSD license][1].
 
@@ -65,3 +65,4 @@ See [GoDoc](https://godoc.org/github.com/vbatoufflet/go-livestatus) for further 
 
 [0]: https://github.com/vbatoufflet/go-livestatus
 [1]: http://opensource.org/licenses/BSD-3-Clause
+[2]: http://mathias-kettner.com/checkmk_livestatus.html
