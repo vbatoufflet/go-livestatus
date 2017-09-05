@@ -80,6 +80,7 @@ func (c *Command) Exec() (*Response, error) {
 func (c *Command) buildCmd(t time.Time) (string, error) {
 	cmdStr := fmt.Sprintf("COMMAND [%d] %s", t.Unix(), c.cmd)
 	cmdStr = fmt.Sprintf("%s;%s", cmdStr, strings.Join(c.vals, ";"))
+	cmdStr = strings.TrimRight(cmdStr, ";")
 
 	return fmt.Sprintf("%s\n", cmdStr), nil
 }
