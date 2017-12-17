@@ -178,6 +178,12 @@ func (q *Query) Exec() (*Response, error) {
 		return resp, nil
 	}
 
+	// Stop on invalid status
+	if resp.Status >= 400 {
+		resp.Message = strings.TrimRight(buf.String(), "\n")
+		return resp, ErrInvalidQuery
+	}
+
 	// Parse received data for records
 	resp.Records, err = q.parse(buf.Bytes())
 	if err != nil {

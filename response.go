@@ -3,6 +3,7 @@ package livestatus
 // Response is a query response.
 type Response struct {
 	Status  int
+	Message string
 	Records []Record
 }
 
