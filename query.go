@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+const bufferSize = 1024
+
 // Query is a binding query instance.
 type Query struct {
 	table   string
@@ -154,7 +156,7 @@ func (q *Query) Exec() (*Response, error) {
 	buf := bytes.NewBuffer(nil)
 
 	for {
-		data = make([]byte, 1024)
+		data = make([]byte, bufferSize)
 
 		n, err := conn.Read(data)
 		if err == io.EOF {
@@ -167,7 +169,7 @@ func (q *Query) Exec() (*Response, error) {
 
 		// New line signals the end of content. This check helps
 		// if the connection is not forcibly closed
-		if data[n-1] == byte('\n') {
+		if n != bufferSize && data[n-1] == byte('\n') {
 			break
 		}
 	}
