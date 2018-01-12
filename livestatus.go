@@ -17,8 +17,9 @@ type Livestatus struct {
 func (l *Livestatus) Close() error {
 	l.keepalive = false
 	if l.keepConn != nil {
+		err := l.keepConn.Close()
 		l.keepConn = nil
-		return l.keepConn.Close()
+		return err
 	}
 	return nil
 }
