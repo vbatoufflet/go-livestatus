@@ -360,8 +360,8 @@ func Test_QueryParse(t *testing.T) {
 	]`
 
 	expected := []Record{
-		Record{"name": "name1", "value": 123.0},
-		Record{"name": "name2", "value": 456.0},
+		{"name": "name1", "value": 123.0},
+		{"name": "name2", "value": 456.0},
 	}
 
 	q := NewQuery("table1")
@@ -382,8 +382,8 @@ func Test_QueryParseWithColumns(t *testing.T) {
 	]`
 
 	expected := []Record{
-		Record{"name": "name1", "value": 123.0},
-		Record{"name": "name2", "value": 456.0},
+		{"name": "name1", "value": 123.0},
+		{"name": "name2", "value": 456.0},
 	}
 
 	q := NewQuery("table1")

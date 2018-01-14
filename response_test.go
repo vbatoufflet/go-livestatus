@@ -8,8 +8,8 @@ func Test_ResponseLen(t *testing.T) {
 	resp := Response{
 		Status: 200,
 		Records: []Record{
-			Record{"name": "name1", "value": 123.0},
-			Record{"name": "name2", "value": 456.0},
+			{"name": "name1", "value": 123.0},
+			{"name": "name2", "value": 456.0},
 		},
 	}
 
