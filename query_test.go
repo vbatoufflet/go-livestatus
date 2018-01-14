@@ -3,51 +3,55 @@ package livestatus
 import (
 	"reflect"
 	"testing"
+	"time"
 )
 
 func Test_Query(t *testing.T) {
-	expected := "GET table1\n"
-	expected += "ResponseHeader: fixed16\n"
-	expected += "OutputFormat: json\n"
-	expected += "\n"
+	expected := `GET table1
+ResponseHeader: fixed16
+OutputFormat: json
 
-	q := newQuery("table1", &Livestatus{})
+`
 
-	result := q.buildCmd()
+	q := NewQuery("table1")
+
+	result := q.String()
 	if result != expected {
 		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
 		t.Fail()
 	}
 }
 
-func Test_QueryColumnSingle(t *testing.T) {
-	expected := "GET table1\n"
-	expected += "Columns: column1\n"
-	expected += "ResponseHeader: fixed16\n"
-	expected += "OutputFormat: json\n"
-	expected += "\n"
+func Test_QueryColumnsSingle(t *testing.T) {
+	expected := `GET table1
+Columns: column1
+ResponseHeader: fixed16
+OutputFormat: json
 
-	q := newQuery("table1", &Livestatus{})
+`
+
+	q := NewQuery("table1")
 	q.Columns("column1")
 
-	result := q.buildCmd()
+	result := q.String()
 	if result != expected {
 		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
 		t.Fail()
 	}
 }
 
-func Test_QueryColumnMulti(t *testing.T) {
-	expected := "GET table1\n"
-	expected += "Columns: column1 column2\n"
-	expected += "ResponseHeader: fixed16\n"
-	expected += "OutputFormat: json\n"
-	expected += "\n"
+func Test_QueryColumnsMulti(t *testing.T) {
+	expected := `GET table1
+Columns: column1 column2
+ResponseHeader: fixed16
+OutputFormat: json
 
-	q := newQuery("table1", &Livestatus{})
+`
+
+	q := NewQuery("table1")
 	q.Columns("column1", "column2")
 
-	result := q.buildCmd()
+	result := q.String()
 	if result != expected {
 		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
 		t.Fail()
@@ -55,16 +59,17 @@ func Test_QueryColumnMulti(t *testing.T) {
 }
 
 func Test_QueryFilterSingle(t *testing.T) {
-	expected := "GET table1\n"
-	expected += "Filter: column1 ~ abc\n"
-	expected += "ResponseHeader: fixed16\n"
-	expected += "OutputFormat: json\n"
-	expected += "\n"
+	expected := `GET table1
+Filter: column1 ~ abc
+ResponseHeader: fixed16
+OutputFormat: json
 
-	q := newQuery("table1", &Livestatus{})
+`
+
+	q := NewQuery("table1")
 	q.Filter("column1 ~ abc")
 
-	result := q.buildCmd()
+	result := q.String()
 	if result != expected {
 		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
 		t.Fail()
@@ -72,18 +77,19 @@ func Test_QueryFilterSingle(t *testing.T) {
 }
 
 func Test_QueryFilterMulti(t *testing.T) {
-	expected := "GET table1\n"
-	expected += "Filter: column1 ~ abc\n"
-	expected += "Filter: column2 >= 123\n"
-	expected += "ResponseHeader: fixed16\n"
-	expected += "OutputFormat: json\n"
-	expected += "\n"
+	expected := `GET table1
+Filter: column1 ~ abc
+Filter: column2 >= 123
+ResponseHeader: fixed16
+OutputFormat: json
 
-	q := newQuery("table1", &Livestatus{})
+`
+
+	q := NewQuery("table1")
 	q.Filter("column1 ~ abc")
 	q.Filter("column2 >= 123")
 
-	result := q.buildCmd()
+	result := q.String()
 	if result != expected {
 		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
 		t.Fail()
@@ -91,20 +97,21 @@ func Test_QueryFilterMulti(t *testing.T) {
 }
 
 func Test_QueryAnd(t *testing.T) {
-	expected := "GET table1\n"
-	expected += "Filter: column1 ~ abc\n"
-	expected += "Filter: column2 >= 123\n"
-	expected += "And: 2\n"
-	expected += "ResponseHeader: fixed16\n"
-	expected += "OutputFormat: json\n"
-	expected += "\n"
+	expected := `GET table1
+Filter: column1 ~ abc
+Filter: column2 >= 123
+And: 2
+ResponseHeader: fixed16
+OutputFormat: json
 
-	q := newQuery("table1", &Livestatus{})
+`
+
+	q := NewQuery("table1")
 	q.Filter("column1 ~ abc")
 	q.Filter("column2 >= 123")
 	q.And(2)
 
-	result := q.buildCmd()
+	result := q.String()
 	if result != expected {
 		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
 		t.Fail()
@@ -112,20 +119,21 @@ func Test_QueryAnd(t *testing.T) {
 }
 
 func Test_QueryOr(t *testing.T) {
-	expected := "GET table1\n"
-	expected += "Filter: column1 ~ abc\n"
-	expected += "Filter: column2 >= 123\n"
-	expected += "Or: 2\n"
-	expected += "ResponseHeader: fixed16\n"
-	expected += "OutputFormat: json\n"
-	expected += "\n"
+	expected := `GET table1
+Filter: column1 ~ abc
+Filter: column2 >= 123
+Or: 2
+ResponseHeader: fixed16
+OutputFormat: json
 
-	q := newQuery("table1", &Livestatus{})
+`
+
+	q := NewQuery("table1")
 	q.Filter("column1 ~ abc")
 	q.Filter("column2 >= 123")
 	q.Or(2)
 
-	result := q.buildCmd()
+	result := q.String()
 	if result != expected {
 		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
 		t.Fail()
@@ -133,18 +141,211 @@ func Test_QueryOr(t *testing.T) {
 }
 
 func Test_QueryNegate(t *testing.T) {
-	expected := "GET table1\n"
-	expected += "Filter: column1 ~ abc\n"
-	expected += "Negate:\n"
-	expected += "ResponseHeader: fixed16\n"
-	expected += "OutputFormat: json\n"
-	expected += "\n"
+	expected := `GET table1
+Filter: column1 ~ abc
+Negate:
+ResponseHeader: fixed16
+OutputFormat: json
 
-	q := newQuery("table1", &Livestatus{})
+`
+
+	q := NewQuery("table1")
 	q.Filter("column1 ~ abc")
 	q.Negate()
 
-	result := q.buildCmd()
+	result := q.String()
+	if result != expected {
+		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
+		t.Fail()
+	}
+}
+
+func Test_QueryLimit(t *testing.T) {
+	expected := `GET table1
+Limit: 3
+ResponseHeader: fixed16
+OutputFormat: json
+
+`
+
+	q := NewQuery("table1")
+	q.Limit(3)
+
+	result := q.String()
+	if result != expected {
+		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
+		t.Fail()
+	}
+}
+
+func Test_QueryKeepAlive(t *testing.T) {
+	expected := `GET table1
+KeepAlive: on
+ResponseHeader: fixed16
+OutputFormat: json
+
+`
+
+	q := NewQuery("table1")
+	q.KeepAlive()
+
+	result := q.String()
+	if result != expected {
+		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
+		t.Fail()
+	}
+}
+
+func Test_QueryWaitObject(t *testing.T) {
+	expected := `GET table1
+WaitObject: object1
+ResponseHeader: fixed16
+OutputFormat: json
+
+`
+
+	q := NewQuery("table1")
+	q.WaitObject("object1")
+
+	result := q.String()
+	if result != expected {
+		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
+		t.Fail()
+	}
+}
+
+func Test_QueryWaitConditionSingle(t *testing.T) {
+	expected := `GET table1
+WaitCondition: column1 ~ abc
+ResponseHeader: fixed16
+OutputFormat: json
+
+`
+
+	q := NewQuery("table1")
+	q.WaitCondition("column1 ~ abc")
+
+	result := q.String()
+	if result != expected {
+		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
+		t.Fail()
+	}
+}
+
+func Test_QueryWaitConditionMulti(t *testing.T) {
+	expected := `GET table1
+WaitCondition: column1 ~ abc
+WaitCondition: column2 >= 123
+ResponseHeader: fixed16
+OutputFormat: json
+
+`
+
+	q := NewQuery("table1")
+	q.WaitCondition("column1 ~ abc")
+	q.WaitCondition("column2 >= 123")
+
+	result := q.String()
+	if result != expected {
+		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
+		t.Fail()
+	}
+}
+
+func Test_QueryWaitConditionAnd(t *testing.T) {
+	expected := `GET table1
+WaitCondition: column1 ~ abc
+WaitCondition: column2 >= 123
+WaitConditionAnd: 2
+ResponseHeader: fixed16
+OutputFormat: json
+
+`
+
+	q := NewQuery("table1")
+	q.WaitCondition("column1 ~ abc")
+	q.WaitCondition("column2 >= 123")
+	q.WaitConditionAnd(2)
+
+	result := q.String()
+	if result != expected {
+		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
+		t.Fail()
+	}
+}
+
+func Test_QueryWaitConditionOr(t *testing.T) {
+	expected := `GET table1
+WaitCondition: column1 ~ abc
+WaitCondition: column2 >= 123
+WaitConditionOr: 2
+ResponseHeader: fixed16
+OutputFormat: json
+
+`
+
+	q := NewQuery("table1")
+	q.WaitCondition("column1 ~ abc")
+	q.WaitCondition("column2 >= 123")
+	q.WaitConditionOr(2)
+
+	result := q.String()
+	if result != expected {
+		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
+		t.Fail()
+	}
+}
+
+func Test_QueryWaitConditionNegate(t *testing.T) {
+	expected := `GET table1
+WaitCondition: column1 ~ abc
+WaitConditionNegate:
+ResponseHeader: fixed16
+OutputFormat: json
+
+`
+
+	q := NewQuery("table1")
+	q.WaitCondition("column1 ~ abc")
+	q.WaitConditionNegate()
+
+	result := q.String()
+	if result != expected {
+		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
+		t.Fail()
+	}
+}
+
+func Test_QueryWaitTrigger(t *testing.T) {
+	expected := `GET table1
+WaitTrigger: event
+ResponseHeader: fixed16
+OutputFormat: json
+
+`
+
+	q := NewQuery("table1")
+	q.WaitTrigger("event")
+
+	result := q.String()
+	if result != expected {
+		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
+		t.Fail()
+	}
+}
+
+func Test_QueryWaitTimeout(t *testing.T) {
+	expected := `GET table1
+WaitTimeout: 5000
+ResponseHeader: fixed16
+OutputFormat: json
+
+`
+
+	q := NewQuery("table1")
+	q.WaitTimeout(5 * time.Second)
+
+	result := q.String()
 	if result != expected {
 		t.Logf("\nExpected %q\nbut got  %q\n", expected, result)
 		t.Fail()
@@ -163,7 +364,7 @@ func Test_QueryParse(t *testing.T) {
 		Record{"name": "name2", "value": 456.0},
 	}
 
-	q := newQuery("table1", &Livestatus{})
+	q := NewQuery("table1")
 
 	result, err := q.parse([]byte(data))
 	if err != nil {
@@ -174,7 +375,7 @@ func Test_QueryParse(t *testing.T) {
 	}
 }
 
-func Test_QueryParseColumns(t *testing.T) {
+func Test_QueryParseWithColumns(t *testing.T) {
 	data := `[
 		["name1", 123],
 		["name2", 456]
@@ -185,7 +386,7 @@ func Test_QueryParseColumns(t *testing.T) {
 		Record{"name": "name2", "value": 456.0},
 	}
 
-	q := newQuery("table1", &Livestatus{})
+	q := NewQuery("table1")
 	q.Columns("name", "value")
 
 	result, err := q.parse([]byte(data))

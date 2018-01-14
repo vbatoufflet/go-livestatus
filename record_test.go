@@ -62,11 +62,11 @@ func Test_RecordGet(t *testing.T) {
 
 func Test_RecordGetBool(t *testing.T) {
 	record := Record{
-		"name":   "name1",
-		"active": 0.0,
+		"name":  "name1",
+		"value": 0.0,
 	}
 
-	result, err := record.GetBool("active")
+	result, err := record.GetBool("value")
 	if err != nil {
 		t.Fatal(err)
 	} else if result {
@@ -75,11 +75,11 @@ func Test_RecordGetBool(t *testing.T) {
 	}
 
 	record = Record{
-		"name":   "name1",
-		"active": 1.0,
+		"name":  "name1",
+		"value": 1.0,
 	}
 
-	result, err = record.GetBool("active")
+	result, err = record.GetBool("value")
 	if err != nil {
 		t.Fatal(err)
 	} else if !result {
@@ -181,6 +181,32 @@ func Test_RecordGetTime(t *testing.T) {
 		t.Fatal(err)
 	} else if !reflect.DeepEqual(result, expected) {
 		t.Logf("\nExpected %s\nbut got  %s\n", expected, result)
+		t.Fail()
+	}
+}
+
+func Test_RecordGetInvalidType(t *testing.T) {
+	record := Record{
+		"name":  "name1",
+		"value": "a",
+	}
+
+	_, err := record.GetInt("value")
+	if err != ErrInvalidType {
+		t.Logf("\nExpected %#v\nbut got  %#v\n", ErrInvalidType, err)
+		t.Fail()
+	}
+}
+
+func Test_RecordGetUnknownColumn(t *testing.T) {
+	record := Record{
+		"name":  "name1",
+		"value": 1,
+	}
+
+	_, err := record.GetInt("unknown")
+	if err != ErrUnknownColumn {
+		t.Logf("\nExpected %#v\nbut got  %#v\n", ErrInvalidType, err)
 		t.Fail()
 	}
 }

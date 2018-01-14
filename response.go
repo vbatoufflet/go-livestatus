@@ -1,6 +1,6 @@
 package livestatus
 
-// Response is a query response.
+// Response represents a Livestatus query response.
 type Response struct {
 	Status  int
 	Message string

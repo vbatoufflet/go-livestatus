@@ -4,9 +4,11 @@ import (
 	"errors"
 )
 
-// Record retrieval errors
 var (
-	ErrUnknownColumn = errors.New("unknown record column")
-	ErrInvalidQuery  = errors.New("invalid query")
-	ErrInvalidValue  = errors.New("invalid record value")
+	// ErrInvalidQuery represents an invalid query error.
+	ErrInvalidQuery = errors.New("invalid query")
+	// ErrInvalidType represents an invalid type error.
+	ErrInvalidType = errors.New("invalid type")
+	// ErrUnknownColumn represents an unknown column error.
+	ErrUnknownColumn = errors.New("unknown column")
 )

@@ -7,88 +7,44 @@ import (
 	"time"
 )
 
-// Command is a binding command instance.
+// Command represents a Livestatus command instance.
 type Command struct {
-	cmd  string
-	vals []string
-	ls   *Livestatus
+	name string
+	args []string
 }
 
-func newCommand(ls *Livestatus) *Command {
+// NewCommand creates a new Livestatus command instance.
+func NewCommand(name string, args ...string) *Command {
 	return &Command{
-		ls: ls,
+		name: name,
+		args: args,
 	}
 }
 
-func (c *Command) Raw(cmd string) {
-	c.cmd = cmd
+// Arg appends a new argument to the command.
+func (c *Command) Arg(v interface{}) *Command {
+	c.args = append(c.args, fmt.Sprintf("%v", v))
+	return c
 }
 
-func (c *Command) Arg(v interface{}) {
-	c.vals = append(c.vals, fmt.Sprintf("%v", v))
-}
-
-type CommandOpFunc func(*Command)
-
-func (c *Command) Op(op CommandOpFunc) {
-	op(c)
-}
-
-// KeepAliveOff disables the default keepalive from Command
-func (q *Query) KeepAliveOff() *Query {
-	q.ls.keepalive = false
-	return q
-}
-
-// Exec executes the query.
-func (c *Command) Exec() (*Response, error) {
-	resp := &Response{}
-
-	var err error
-	var conn net.Conn
-
-	if c.ls.keepConn != nil {
-		conn = c.ls.keepConn
-	} else {
-		// Connect to socket
-		conn, err = c.dial()
-		if err != nil {
-			return nil, err
-		}
+// String returns a string representation of the Livestatus command.
+func (c Command) String() string {
+	s := fmt.Sprintf("COMMAND [%d] %s", time.Now().Unix(), c.name)
+	if len(c.args) > 0 {
+		s += ";" + strings.Join(c.args, ";")
 	}
+	s += "\n\n"
 
-	if !c.ls.keepalive {
-		c.ls.keepConn = nil
-		defer conn.Close()
-	} else {
-		c.ls.keepConn = conn
-	}
-
-	// Send command data
-	cmd, err := c.buildCmd(time.Now())
-	if err != nil {
-		return nil, err
-	}
-
-	conn.Write([]byte(cmd))
-	// You get nothing back from an external command
-	// no way of knowing if this has worked
-
-	return resp, nil
+	return s
 }
 
-func (c *Command) buildCmd(t time.Time) (string, error) {
-	cmdStr := fmt.Sprintf("COMMAND [%d] %s", t.Unix(), c.cmd)
-	cmdStr = fmt.Sprintf("%s;%s", cmdStr, strings.Join(c.vals, ";"))
-	cmdStr = strings.TrimRight(cmdStr, ";")
+func (c Command) handle(conn net.Conn) (*Response, error) {
+	// Send query data
+	conn.Write([]byte(c.String()))
 
-	return fmt.Sprintf("%s\n", cmdStr), nil
+	return nil, nil
 }
 
-func (c *Command) dial() (net.Conn, error) {
-	if c.ls.dialer != nil {
-		return c.ls.dialer()
-	} else {
-		return net.Dial(c.ls.network, c.ls.address)
-	}
+func (c Command) keepAlive() bool {
+	return true
 }
