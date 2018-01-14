@@ -7,7 +7,7 @@ import (
 )
 
 func Test_Command(t *testing.T) {
-	expected := fmt.Sprintf("COMMAND [%d] command1\n", time.Now().Unix())
+	expected := fmt.Sprintf("COMMAND [%d] command1\n\n", time.Now().Unix())
 
 	c := NewCommand("command1")
 
@@ -19,7 +19,7 @@ func Test_Command(t *testing.T) {
 }
 
 func Test_CommandWithInlineArgs(t *testing.T) {
-	expected := fmt.Sprintf("COMMAND [%d] command1;arg1;arg2\n", time.Now().Unix())
+	expected := fmt.Sprintf("COMMAND [%d] command1;arg1;arg2\n\n", time.Now().Unix())
 
 	c := NewCommand("command1", "arg1", "arg2")
 
@@ -31,7 +31,7 @@ func Test_CommandWithInlineArgs(t *testing.T) {
 }
 
 func Test_CommandWithArgs(t *testing.T) {
-	expected := fmt.Sprintf("COMMAND [%d] command1;arg1;arg2\n", time.Now().Unix())
+	expected := fmt.Sprintf("COMMAND [%d] command1;arg1;arg2\n\n", time.Now().Unix())
 
 	c := NewCommand("command1")
 	c.Arg("arg1")
