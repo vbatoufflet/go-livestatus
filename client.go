@@ -4,8 +4,6 @@ import (
 	"net"
 )
 
-const bufferSize = 1024
-
 // Client represents a Livestatus client instance.
 type Client struct {
 	network string

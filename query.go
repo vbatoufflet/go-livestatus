@@ -149,11 +149,17 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 		return nil, err
 	}
 
+	length, err := strconv.Atoi(string(bytes.TrimSpace(data[5:15])))
+	if err != nil {
+		return nil, err
+	}
+	remainder := length
+
 	// Receive response data
 	buf := bytes.NewBuffer(nil)
 
 	for {
-		data = make([]byte, bufferSize)
+		data = make([]byte, remainder)
 
 		n, err := conn.Read(data)
 		if err == io.EOF {
@@ -164,9 +170,8 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 
 		buf.Write(bytes.TrimRight(data, "\x00"))
 
-		// New line signals the end of content. This check helps
-		// if the connection is not forcibly closed
-		if n != bufferSize && data[n-1] == byte('\n') {
+		remainder -= n
+		if remainder <= 0 {
 			break
 		}
 	}
