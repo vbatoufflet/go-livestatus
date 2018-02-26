@@ -47,7 +47,9 @@ func (c *Client) Exec(r Request) (*Response, error) {
 			return nil, err
 		}
 
-		if !r.keepAlive() {
+		if r.keepAlive() {
+			c.conn.(*net.TCPConn).SetKeepAlive(true)
+		} else {
 			defer c.Close()
 		}
 	}
