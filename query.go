@@ -132,8 +132,18 @@ func (q Query) String() string {
 func (q Query) handle(conn net.Conn) (*Response, error) {
 	var err error
 
+	cmd := q.String()
+	lcmd := len(cmd)
+
 	// Send query data
-	conn.Write([]byte(q.String()))
+	n, err := conn.Write([]byte(cmd))
+	if err != nil {
+		return nil, err
+	}
+
+	if n != lcmd {
+		return nil, fmt.Errorf("incomplete write to livestatus. Wrote %d bytes while %d were to be written", n, lcmd)
+	}
 
 	// Read response header
 	data := make([]byte, 16)
