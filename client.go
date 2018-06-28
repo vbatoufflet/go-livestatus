@@ -46,7 +46,10 @@ func (c *Client) Exec(r Request) (*Response, error) {
 		}
 
 		if r.keepAlive() {
-			c.conn.(*net.TCPConn).SetKeepAlive(true)
+			switch c.network {
+			case "tcp":
+				c.conn.(*net.TCPConn).SetKeepAlive(true)
+			}
 		} else {
 			defer c.Close()
 		}
