@@ -39,8 +39,19 @@ func (c Command) String() string {
 }
 
 func (c Command) handle(conn net.Conn) (*Response, error) {
+
+	cmd := c.String()
+	lcmd := len(cmd)
+
 	// Send query data
-	conn.Write([]byte(c.String()))
+	n, err := conn.Write([]byte(cmd))
+	if err != nil {
+		return nil, err
+	}
+
+	if n != lcmd {
+		return nil, fmt.Errorf("incomplete write to livestatus. Wrote %d bytes while %d were to be written", n, lcmd)
+	}
 
 	return nil, nil
 }
