@@ -11,6 +11,8 @@ import (
 type Command struct {
 	name string
 	args []string
+
+	writeTimeout time.Duration
 }
 
 // NewCommand creates a new Livestatus command instance.
@@ -27,6 +29,13 @@ func (c *Command) Arg(v interface{}) *Command {
 	return c
 }
 
+// WriteTimeout sets the connection timeout for write operations.
+// A value of 0 disables the timeout.
+func (c *Command) WriteTimeout(timeout time.Duration) *Command {
+	c.writeTimeout = timeout
+	return c
+}
+
 // String returns a string representation of the Livestatus command.
 func (c Command) String() string {
 	s := fmt.Sprintf("COMMAND [%d] %s", time.Now().Unix(), c.name)
@@ -39,9 +48,15 @@ func (c Command) String() string {
 }
 
 func (c Command) handle(conn net.Conn) (*Response, error) {
-
 	cmd := c.String()
 	lcmd := len(cmd)
+
+	if c.writeTimeout > 0 {
+		conn.SetWriteDeadline(time.Now().Add(c.writeTimeout))
+	} else {
+		// disable timeout
+		conn.SetWriteDeadline(time.Time{})
+	}
 
 	// Send query data
 	n, err := conn.Write([]byte(cmd))

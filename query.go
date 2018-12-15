@@ -17,6 +17,9 @@ type Query struct {
 	headers   []string
 	columns   []string
 	keepalive bool
+
+	writeTimeout time.Duration
+	readTimeout  time.Duration
 }
 
 // NewQuery creates a new Livestatus query instance.
@@ -118,6 +121,21 @@ func (q *Query) KeepAlive() *Query {
 	return q
 }
 
+// WriteTimeout sets the connection timeout for write operations.
+// A value of 0 disables the timeout.
+func (q *Query) WriteTimeout(timeout time.Duration) *Query {
+	q.writeTimeout = timeout
+	return q
+}
+
+// ReadTimeout sets the connection timeout for read operations.
+// Be careful when using a read timeout in conjunction with wait conditions.
+// A value of 0 disables the timeout.
+func (q *Query) ReadTimeout(timeout time.Duration) *Query {
+	q.readTimeout = timeout
+	return q
+}
+
 // String returns a string representation of the Livestatus query.
 func (q Query) String() string {
 	s := "GET " + q.table
@@ -135,6 +153,13 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 	cmd := q.String()
 	lcmd := len(cmd)
 
+	if q.writeTimeout > 0 {
+		conn.SetWriteDeadline(time.Now().Add(q.writeTimeout))
+	} else {
+		// disable timeout
+		conn.SetWriteDeadline(time.Time{})
+	}
+
 	// Send query data
 	n, err := conn.Write([]byte(cmd))
 	if err != nil {
@@ -143,6 +168,13 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 
 	if n != lcmd {
 		return nil, fmt.Errorf("incomplete write to livestatus. Wrote %d bytes while %d were to be written", n, lcmd)
+	}
+
+	if q.readTimeout > 0 {
+		conn.SetReadDeadline(time.Now().Add(q.readTimeout))
+	} else {
+		// disable timeout
+		conn.SetReadDeadline(time.Time{})
 	}
 
 	// Read response header
