@@ -188,12 +188,20 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 	resp := &Response{}
 	resp.Status, err = strconv.Atoi(string(data[:3]))
 	if err != nil {
-		return nil, fmt.Errorf("parsing response status from header failed: %v", err)
+		return nil, ParseError{
+			Message:    fmt.Sprintf("parsing response status from header failed: %v", err),
+			FailedData: data[:3],
+			Buffer:     data,
+		}
 	}
 
 	length, err := strconv.Atoi(string(bytes.TrimSpace(data[5:15])))
 	if err != nil {
-		return nil, fmt.Errorf("parsing response length from header failed: %v", err)
+		return nil, ParseError{
+			Message:    fmt.Sprintf("parsing response length from header failed: %v", err),
+			FailedData: data[5:15],
+			Buffer:     data,
+		}
 	}
 	remainder := length
 
@@ -246,7 +254,10 @@ func (q *Query) parse(data []byte) ([]Record, error) {
 
 	// Unmarshal received data
 	if err := json.Unmarshal(data, &rows); err != nil {
-		return nil, err
+		return nil, ParseError{
+			Message:    fmt.Sprintf("unmarshal JSON failed: %v", err),
+			FailedData: data,
+		}
 	} else if len(q.columns) == 0 && len(rows) < 2 || len(q.columns) > 0 && len(rows) < 1 {
 		return nil, nil
 	}
