@@ -199,7 +199,7 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 	if err != nil {
 		return nil, ParseError{
 			Message:    fmt.Sprintf("parsing response length from header failed: %v", err),
-			FailedData: data[5:15],
+			FailedData: bytes.TrimSpace(data[5:15]),
 			Buffer:     data,
 		}
 	}
