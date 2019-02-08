@@ -163,7 +163,7 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 	// Send query data
 	n, err := conn.Write([]byte(cmd))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sending query failed: %v", err)
 	}
 
 	if n != lcmd {
@@ -182,18 +182,18 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 
 	_, err = conn.Read(data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("reading response header failed: %v", err)
 	}
 
 	resp := &Response{}
 	resp.Status, err = strconv.Atoi(string(data[:3]))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parsing response status from header failed: %v", err)
 	}
 
 	length, err := strconv.Atoi(string(bytes.TrimSpace(data[5:15])))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parsing response length from header failed: %v", err)
 	}
 	remainder := length
 
@@ -207,7 +207,7 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to read body (buffer size: %d, remainder: %d): %v", buf.Len(), remainder, err)
 		}
 
 		buf.Write(bytes.TrimRight(data, "\x00"))
@@ -231,7 +231,7 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 	// Parse received data for records
 	resp.Records, err = q.parse(buf.Bytes())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse read data as records: %v", err)
 	}
 
 	return resp, nil
