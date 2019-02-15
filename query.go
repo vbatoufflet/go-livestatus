@@ -215,7 +215,7 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return nil, fmt.Errorf("failed to read body (buffer size: %d, remainder: %d): %v", buf.Len(), remainder, err)
+			return nil, fmt.Errorf("reading body (buffer size: %d, remainder: %d) failed: %v", buf.Len(), remainder, err)
 		}
 
 		buf.Write(bytes.TrimRight(data, "\x00"))
@@ -239,7 +239,7 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 	// Parse received data for records
 	resp.Records, err = q.parse(buf.Bytes())
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse read data as records: %v", err)
+		return nil, fmt.Errorf("parsing read data as records failed: %v", err)
 	}
 
 	return resp, nil
