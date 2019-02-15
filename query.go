@@ -255,7 +255,7 @@ func (q *Query) parse(data []byte) ([]Record, error) {
 	// Unmarshal received data
 	if err := json.Unmarshal(data, &rows); err != nil {
 		return nil, ParseError{
-			Message:    fmt.Sprintf("unmarshal JSON failed: %v", err),
+			Message:    fmt.Sprintf("unmarshalling JSON failed: %v", err),
 			FailedData: data,
 		}
 	} else if len(q.columns) == 0 && len(rows) < 2 || len(q.columns) > 0 && len(rows) < 1 {
