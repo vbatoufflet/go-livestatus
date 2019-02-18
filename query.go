@@ -163,7 +163,7 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 	// Send query data
 	n, err := conn.Write([]byte(cmd))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sending query failed: %v", err)
 	}
 
 	if n != lcmd {
@@ -182,18 +182,26 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 
 	_, err = conn.Read(data)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("reading response header failed: %v", err)
 	}
 
 	resp := &Response{}
 	resp.Status, err = strconv.Atoi(string(data[:3]))
 	if err != nil {
-		return nil, err
+		return nil, ParseError{
+			Message:    fmt.Sprintf("parsing response status from header failed: %v", err),
+			FailedData: data[:3],
+			Buffer:     data,
+		}
 	}
 
 	length, err := strconv.Atoi(string(bytes.TrimSpace(data[5:15])))
 	if err != nil {
-		return nil, err
+		return nil, ParseError{
+			Message:    fmt.Sprintf("parsing response length from header failed: %v", err),
+			FailedData: bytes.TrimSpace(data[5:15]),
+			Buffer:     data,
+		}
 	}
 	remainder := length
 
@@ -207,7 +215,7 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 		if err == io.EOF {
 			break
 		} else if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("reading body (buffer size: %d, remainder: %d) failed: %v", buf.Len(), remainder, err)
 		}
 
 		buf.Write(bytes.TrimRight(data, "\x00"))
@@ -231,7 +239,7 @@ func (q Query) handle(conn net.Conn) (*Response, error) {
 	// Parse received data for records
 	resp.Records, err = q.parse(buf.Bytes())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parsing read data as records failed: %v", err)
 	}
 
 	return resp, nil
@@ -246,7 +254,10 @@ func (q *Query) parse(data []byte) ([]Record, error) {
 
 	// Unmarshal received data
 	if err := json.Unmarshal(data, &rows); err != nil {
-		return nil, err
+		return nil, ParseError{
+			Message:    fmt.Sprintf("unmarshalling JSON failed: %v", err),
+			FailedData: data,
+		}
 	} else if len(q.columns) == 0 && len(rows) < 2 || len(q.columns) > 0 && len(rows) < 1 {
 		return nil, nil
 	}
